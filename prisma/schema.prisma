@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String
+  role          String    @default("USER")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  managerId     String?   // Reference to the manager who created this user (for Level 3 users)
+  manager       User?     @relation("UserToManager", fields: [managerId], references: [id])
+  subordinates  User[]    @relation("UserToManager")
+  purchaseLimit Float     @default(0)
+  orders        Order[]
+  subscription  Subscription?
+  visibleTo     VisibleUsers[] @relation("VisibleToUsers")
+  canView       VisibleUsers[] @relation("CanViewUsers")
+}
+
+model VisibleUsers {
+  id          String @id @default(cuid())
+  userId      String
+  visibleToId String
+  user        User   @relation("VisibleToUsers", fields: [userId], references: [id])
+  visibleTo   User   @relation("CanViewUsers", fields: [visibleToId], references: [id])
+
+  @@unique([userId, visibleToId])
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  plan      String
+  startDate DateTime @default(now())
+  endDate   DateTime
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id              String           @id @default(cuid())
+  name            String
+  description     String
+  specifications  String?          // Technical specifications as JSON string
+  images          String?          // URLs to product images as JSON string
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  suppliers       SupplierProduct[]
+  orderItems      OrderItem[]
+}
+
+model Supplier {
+  id          String            @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  whatsapp    String?
+  products    SupplierProduct[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model SupplierProduct {
+  id          String   @id @default(cuid())
+  productId   String
+  supplierId  String
+  product     Product  @relation(fields: [productId], references: [id])
+  supplier    Supplier @relation(fields: [supplierId], references: [id])
+  buyPrice    Float
+  sellPrice   Float
+  stock       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([productId, supplierId])
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  status      String      @default("PENDING")
+  items       OrderItem[]
+  projectName String?
+  address     String?
+  deliveryDate DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  approvedBy  String?     // ID of the manager/admin who approved the order
+}
+
+model OrderItem {
+  id                String          @id @default(cuid())
+  orderId          String
+  order            Order           @relation(fields: [orderId], references: [id])
+  productId        String
+  product          Product         @relation(fields: [productId], references: [id])
+  quantity         Int
+  supplierProductId String
+  price           Float
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
