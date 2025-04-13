@@ -1,5 +1,5 @@
-import Cart from "@/components/Cart";
-import Catalog from "@/components/Catalog";
+import Cart from "../../components/Cart";
+import Catalog from "../../components/Catalog";
 
 export  function Home() {
   return (

@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:/app/prisma/dev.db
+    volumes:
+      - ./prisma:/app/prisma  # So the database file is shared
+    depends_on:
+      - db
+
+  db:
+    image: alpine:latest
+    volumes:
+      - sqlite_data:/data
+    entrypoint: ["/bin/sh", "-c", "mkdir -p /data && touch /data/dev.db && sleep infinity"]
+    # just simulates db creation for volume
+
+volumes:
+  sqlite_data:

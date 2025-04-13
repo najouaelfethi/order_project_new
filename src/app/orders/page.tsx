@@ -20,19 +20,7 @@ interface Order {
 }
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: "1",
-      status: "PENDING",
-      createdAt: "2024-01-20",
-      projectName: "Project A",
-      items: [
-        { product: { name: "Product 1" }, quantity: 5, price: 100 },
-        { product: { name: "Product 2" }, quantity: 3, price: 200 },
-      ],
-    },
-    // Add more mock orders here
-  ]);
+  const [orders] = useState<Order[]>([]);
 
   const getStatusColor = (status: Order["status"]) => {
     switch (status) {

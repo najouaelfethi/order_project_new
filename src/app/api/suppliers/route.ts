@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { Prisma } from "@prisma/client";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
@@ -27,9 +26,10 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(supplier);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Something went wrong";
     return NextResponse.json(
-      { error: error.message || "Something went wrong" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
@@ -49,11 +49,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("query");
 
-    const where: Prisma.SupplierWhereInput = query
+    const where = query
       ? {
           OR: [
-            { name: { contains: query, mode: "insensitive" as Prisma.QueryMode } },
-            { email: { contains: query, mode: "insensitive" as Prisma.QueryMode } },
+            { name: { contains: query, mode: "insensitive" } },
+            { email: { contains: query, mode: "insensitive" } },
           ],
         }
       : {};
@@ -70,9 +70,10 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json(suppliers);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Something went wrong";
     return NextResponse.json(
-      { error: error.message || "Something went wrong" },
+      { error: errorMessage },
       { status: 500 }
     );
   }

@@ -7,6 +7,7 @@ import { PhotoIcon } from "@heroicons/react/24/solid";
 
 export default function NewProductPage() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -16,8 +17,27 @@ export default function NewProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement product creation
-    router.push("/products");
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create product");
+      }
+
+      router.push("/products");
+    } catch (error) {
+      console.error("Error creating product:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,15 +72,11 @@ export default function NewProductPage() {
                         type="text"
                         name="name"
                         id="name"
-                        required
                         value={formData.name}
                         onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            name: e.target.value,
-                          }))
+                          setFormData((prev) => ({ ...prev, name: e.target.value }))
                         }
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       />
                     </div>
                   </div>
@@ -77,7 +93,6 @@ export default function NewProductPage() {
                         id="description"
                         name="description"
                         rows={3}
-                        required
                         value={formData.description}
                         onChange={(e) =>
                           setFormData((prev) => ({
@@ -85,7 +100,7 @@ export default function NewProductPage() {
                             description: e.target.value,
                           }))
                         }
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       />
                     </div>
                   </div>
@@ -95,13 +110,13 @@ export default function NewProductPage() {
                       htmlFor="specifications"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Technical Specifications
+                      Specifications
                     </label>
                     <div className="mt-1">
                       <textarea
                         id="specifications"
                         name="specifications"
-                        rows={4}
+                        rows={3}
                         value={formData.specifications}
                         onChange={(e) =>
                           setFormData((prev) => ({
@@ -109,8 +124,7 @@ export default function NewProductPage() {
                             specifications: e.target.value,
                           }))
                         }
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        placeholder="Enter technical specifications in JSON format"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       />
                     </div>
                   </div>
@@ -120,18 +134,18 @@ export default function NewProductPage() {
                       htmlFor="images"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Product Images
+                      Images
                     </label>
-                    <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pt-5 pb-6">
-                      <div className="space-y-1 text-center">
+                    <div className="mt-1 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
+                      <div className="text-center">
                         <PhotoIcon
-                          className="mx-auto h-12 w-12 text-gray-400"
+                          className="mx-auto h-12 w-12 text-gray-300"
                           aria-hidden="true"
                         />
-                        <div className="flex text-sm text-gray-600">
+                        <div className="mt-4 flex text-sm leading-6 text-gray-600">
                           <label
                             htmlFor="images"
-                            className="relative cursor-pointer rounded-md bg-white font-medium text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:text-indigo-500"
+                            className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
                           >
                             <span>Upload files</span>
                             <input
@@ -139,25 +153,17 @@ export default function NewProductPage() {
                               name="images"
                               type="file"
                               multiple
-                              accept="image/*"
                               className="sr-only"
                               onChange={handleImageChange}
                             />
                           </label>
                           <p className="pl-1">or drag and drop</p>
                         </div>
-                        <p className="text-xs text-gray-500">
-                          PNG, JPG, GIF up to 10MB each
+                        <p className="text-xs leading-5 text-gray-600">
+                          PNG, JPG, GIF up to 10MB
                         </p>
                       </div>
                     </div>
-                    {formData.images.length > 0 && (
-                      <div className="mt-2">
-                        <p className="text-sm text-gray-500">
-                          Selected files: {formData.images.length}
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -166,17 +172,11 @@ export default function NewProductPage() {
             <div className="pt-5">
               <div className="flex justify-end">
                 <button
-                  type="button"
-                  onClick={() => router.push("/products")}
-                  className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                  Cancel
-                </button>
-                <button
                   type="submit"
-                  className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  disabled={isLoading}
+                  className="ml-3 inline-flex justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
-                  Create
+                  {isLoading ? "Creating..." : "Create"}
                 </button>
               </div>
             </div>

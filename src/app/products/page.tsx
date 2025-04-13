@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AppLayout from "../../components/layout/AppLayout";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
@@ -17,18 +17,27 @@ interface Product {
 }
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([
-    {
-      id: "1",
-      name: "Product 1",
-      description: "Description for product 1",
-      suppliers: [
-        { name: "Supplier 1", price: 100, stock: 50 },
-        { name: "Supplier 2", price: 95, stock: 30 },
-      ],
-    },
-    // Add more mock products here
-  ]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch("/api/products");
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
+        const data = await response.json();
+        setProducts(data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   return (
     <AppLayout>
@@ -81,27 +90,41 @@ export default function ProductsPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white">
-                      {products.map((product) => (
-                        <tr key={product.id}>
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                            {product.name}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                            {product.description}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                            {product.suppliers.length} suppliers
-                          </td>
-                          <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                            <Link
-                              href={`/products/${product.id}`}
-                              className="text-indigo-600 hover:text-indigo-900"
-                            >
-                              Edit
-                            </Link>
+                      {isLoading ? (
+                        <tr>
+                          <td colSpan={4} className="px-3 py-4 text-center text-sm text-gray-500">
+                            Loading products...
                           </td>
                         </tr>
-                      ))}
+                      ) : products.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="px-3 py-4 text-center text-sm text-gray-500">
+                            No products found
+                          </td>
+                        </tr>
+                      ) : (
+                        products.map((product) => (
+                          <tr key={product.id}>
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                              {product.name}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                              {product.description}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                              {product.suppliers.length} suppliers
+                            </td>
+                            <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                              <Link
+                                href={`/products/${product.id}`}
+                                className="text-indigo-600 hover:text-indigo-900"
+                              >
+                                Edit
+                              </Link>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>

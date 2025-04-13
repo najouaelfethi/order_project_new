@@ -19,20 +19,7 @@ interface Supplier {
 }
 
 export default function SuppliersPage() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>([
-    {
-      id: "1",
-      name: "Supplier 1",
-      email: "supplier1@example.com",
-      phone: "+1234567890",
-      whatsapp: "+1234567890",
-      products: [
-        { name: "Product 1", price: 100, stock: 50 },
-        { name: "Product 2", price: 200, stock: 30 },
-      ],
-    },
-    // Add more mock suppliers here
-  ]);
+  const [suppliers] = useState<Supplier[]>([]);
 
   return (
     <AppLayout>

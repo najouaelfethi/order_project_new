@@ -1,17 +1,16 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "../../../../lib/prisma";  // Ensure this path is correct
+import { prisma } from "./prisma";
 import { compare } from "bcrypt";
-import NextAuth from "next-auth/next";
 
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
   },
   pages: {
-    signIn: "/login", // ✅ Redirect users to your login page
+    signIn: "/login",
   },
   providers: [
     CredentialsProvider({
@@ -33,7 +32,6 @@ const authOptions: NextAuthOptions = {
           throw new Error("User not found");
         }
 
-        // ✅ Compare password with bcrypt
         const isPasswordValid = await compare(credentials.password, user.password);
         if (!isPasswordValid) {
           throw new Error("Invalid password");
@@ -42,7 +40,7 @@ const authOptions: NextAuthOptions = {
         return {
           id: user.id,
           email: user.email,
-          name: user.name,
+          name: user.name || "",
           role: user.role,
         };
       },
@@ -61,7 +59,4 @@ const authOptions: NextAuthOptions = {
       return session;
     },
   },
-};
-
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+}; 

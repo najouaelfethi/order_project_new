@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { Prisma } from "@prisma/client";
+import { authOptions } from "@/lib/auth";
+import type { Prisma } from "@prisma/client";
 
 export async function POST(request: Request) {
   try {
@@ -49,11 +49,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("query");
 
-    const where: Prisma.ProductWhereInput = query
+    const where = query
       ? {
           OR: [
-            { name: { contains: query, mode: "insensitive" as Prisma.QueryMode } },
-            { description: { contains: query, mode: "insensitive" as Prisma.QueryMode } },
+            { name: { contains: query, mode: "insensitive" } },
+            { description: { contains: query, mode: "insensitive" } },
           ],
         }
       : {};
